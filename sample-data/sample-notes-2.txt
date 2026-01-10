@@ -1,0 +1,23 @@
+Night Shift Report - Jan 7, 2026
+
+Critical: Pump P-105 failed at 02:15. Backup pump P-106 automatically engaged.
+Maintenance notified. P-105 has been showing bearing wear for 2 days.
+
+Heat Exchanger HX-201: Fouling detected. Outlet temp dropped from 120°C to 105°C.
+Cleaning scheduled for day shift. Reduced throughput by 10% to compensate.
+
+Alarms: High level alarm on separator S-301 at 03:45. Operator manually drained.
+Root cause: Level controller LIC-301 drift. Needs calibration.
+
+Tank Farm: All tanks within normal levels. T-501 at 92% - arrange transfer to T-502.
+
+Production:
+- Throughput: 850 tons (target: 900 tons) - reduced due to HX-201 fouling
+- Quality: All within spec
+- Downtime: 30 min for P-105 switchover
+
+Day shift priorities:
+1. Calibrate LIC-301
+2. Investigate P-105 failure
+3. Monitor HX-201 performance
+4. Transfer from T-501 to T-502

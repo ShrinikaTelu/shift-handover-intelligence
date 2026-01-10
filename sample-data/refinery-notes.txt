@@ -1,0 +1,20 @@
+EMERGENCY - Furnace F-301 flame failure at 04:15
+
+Fire-eye detector lost signal. Emergency shutdown system (ESD)
+activated automatically. All feeds isolated, steam purge initiated.
+
+No injuries, no releases. Safety systems worked perfectly.
+
+Root cause TBD - could be:
+- Fuel gas pressure issue (was fluctuating 0-2 bar below normal)
+- Detector failure (sensor is 8 years old, due for replacement)
+- Burner tip plugging
+
+Unit cooldown in progress. Currently at 220°C (was 380°C).
+Target safe entry temp 80°C - ETA 14:00 today.
+
+Maintenance planning entry for inspection. Need confined space
+permits, gas testing, firefighting equipment staged.
+
+Customer contracts: We're down 50,000 bbl/day. Notify trading desk.
+Insurance claim initiated - Frank from EHS handling.

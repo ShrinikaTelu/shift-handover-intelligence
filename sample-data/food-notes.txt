@@ -1,0 +1,21 @@
+2nd Shift - Pasteurizer Line 2
+
+Near-miss on batch #2401-0107-B at 18:45.
+
+Pasteurization temp dropped to 71.8°C for approximately 45 seconds
+(spec minimum is 72.0°C). Flow diverted to rework tank automatically.
+
+Chart recorder confirmed the dip. Looks like steam pressure
+fluctuated when boiler #2 was doing its blowdown cycle.
+
+QA manager Sarah notified - she's reviewing if the 45 seconds
+below temp is within FDA tolerance for this product type.
+We might be able to re-pasteurize instead of dumping.
+
+Batch volume: 5,000 gallons whole milk (Customer: Grocery Chain XYZ)
+Value: ~$18,000
+
+Corrective action: Coordinated boiler blowdowns with production
+schedule to avoid steam pressure dips during critical phases.
+
+Rest of shift normal - Lines 1, 3, 4 all running on spec.

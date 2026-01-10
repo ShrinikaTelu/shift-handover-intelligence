@@ -1,0 +1,60 @@
+{
+    "metadata": {
+        "plant": "AVEVA Demo Plant",
+        "timestamp": "2026-01-07T18:20:00Z",
+        "source": "PI System"
+    },
+    "activeAlarms": [
+        {
+            "id": "PIC-405-HI",
+            "tag": "Reactor-B.Pressure",
+            "description": "High Pressure Alarm on Reactor B",
+            "priority": "Critical",
+            "timestamp": "2026-01-07T18:20:00Z",
+            "value": 28.5,
+            "setpoint": 25.0,
+            "unit": "bar",
+            "status": "Active"
+        },
+        {
+            "id": "LIC-301-HI",
+            "tag": "S-301.Level",
+            "description": "High Level Alarm on Separator S-301",
+            "priority": "High",
+            "timestamp": "2026-01-07T03:45:00Z",
+            "value": 95.2,
+            "setpoint": 90.0,
+            "unit": "%",
+            "status": "Active"
+        },
+        {
+            "id": "VIB-202-HI",
+            "tag": "C-202.Vibration",
+            "description": "High Vibration on Compressor C-202",
+            "priority": "Medium",
+            "timestamp": "2026-01-07T14:30:00Z",
+            "value": 8.5,
+            "setpoint": 7.0,
+            "unit": "mm/s",
+            "status": "Active"
+        }
+    ],
+    "acknowledgedAlarms": [
+        {
+            "id": "TEMP-201-LO",
+            "tag": "HX-201.OutletTemp",
+            "description": "Low Temperature on Heat Exchanger HX-201",
+            "priority": "Medium",
+            "timestamp": "2026-01-07T02:15:00Z",
+            "acknowledgedBy": "Operator-001",
+            "acknowledgedAt": "2026-01-07T02:20:00Z"
+        }
+    ],
+    "alarmStatistics": {
+        "totalActive": 3,
+        "critical": 1,
+        "high": 1,
+        "medium": 1,
+        "low": 0
+    }
+}

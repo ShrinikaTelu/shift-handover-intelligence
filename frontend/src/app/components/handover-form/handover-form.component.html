@@ -1,0 +1,109 @@
+<div class="handover-form-container">
+    <div class="form-card">
+        <h2>🏭 Shift Handover Intelligence</h2>
+        <p class="subtitle">Generate structured handover summaries with AI</p>
+
+        <form (ngSubmit)="onSubmit()" #handoverForm="ngForm">
+            <!-- Shift Notes -->
+            <div class="form-group">
+                <label for="shiftNotes">
+                    <strong>Shift Notes</strong> <span class="required">*</span>
+                </label>
+                <textarea
+                    id="shiftNotes"
+                    [(ngModel)]="shiftNotes"
+                    name="shiftNotes"
+                    rows="12"
+                    placeholder="Enter shift handover notes here...
+
+Example:
+- Equipment status
+- Alarms and incidents
+- Production metrics
+- Issues and concerns
+- Actions taken"
+                    required
+                    [disabled]="isLoading"
+                ></textarea>
+            </div>
+
+            <!-- Sample Data Buttons -->
+            <div class="sample-buttons">
+                <button
+                    type="button"
+                    (click)="loadSampleData(1)"
+                    class="btn-sample"
+                    [disabled]="isLoading"
+                >
+                    📝 Sample 1: Normal Ops
+                </button>
+                <button
+                    type="button"
+                    (click)="loadSampleData(2)"
+                    class="btn-sample"
+                    [disabled]="isLoading"
+                >
+                    ⚠️ Sample 2: Pump Failure
+                </button>
+                <button
+                    type="button"
+                    (click)="loadSampleData(3)"
+                    class="btn-sample"
+                    [disabled]="isLoading"
+                >
+                    🚨 Sample 3: Reactor Trip
+                </button>
+            </div>
+
+            <!-- Alarms JSON Upload -->
+            <div class="form-group">
+                <label for="alarmsFile">
+                    <strong>Alarms Data</strong>
+                    <span class="optional">(optional JSON file)</span>
+                </label>
+                <input
+                    type="file"
+                    id="alarmsFile"
+                    (change)="onAlarmsFileChange($event)"
+                    accept=".json"
+                    [disabled]="isLoading"
+                />
+                <small class="help-text"
+                    >Upload active alarms in JSON format</small
+                >
+            </div>
+
+            <!-- Trends CSV Upload -->
+            <div class="form-group">
+                <label for="trendsFile">
+                    <strong>Trend Data</strong>
+                    <span class="optional">(optional CSV file)</span>
+                </label>
+                <input
+                    type="file"
+                    id="trendsFile"
+                    (change)="onTrendsFileChange($event)"
+                    accept=".csv"
+                    [disabled]="isLoading"
+                />
+                <small class="help-text"
+                    >Upload process trends in CSV format</small
+                >
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-actions">
+                <button
+                    type="submit"
+                    class="btn-primary"
+                    [disabled]="!shiftNotes.trim() || isLoading"
+                >
+                    <span *ngIf="!isLoading">🤖 Generate Handover</span>
+                    <span *ngIf="isLoading">
+                        <span class="spinner"></span> Generating...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

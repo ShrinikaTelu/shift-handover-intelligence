@@ -1,0 +1,163 @@
+<div class="result-container" *ngIf="result || error">
+    <!-- Error Display -->
+    <div class="error-card" *ngIf="error">
+        <div class="error-icon">⚠️</div>
+        <h3>Error Generating Handover</h3>
+        <p>{{ error }}</p>
+        <small>Please check your API connection and try again.</small>
+    </div>
+
+    <!-- Success Display -->
+    <div class="result-card" *ngIf="result && !error">
+        <div class="result-header">
+            <h2>✅ Handover Generated Successfully</h2>
+            <div class="action-buttons">
+                <button
+                    class="btn-action"
+                    (click)="copyToClipboard()"
+                    title="Copy as Markdown"
+                >
+                    📋 Copy Markdown
+                </button>
+                <button
+                    class="btn-action"
+                    (click)="downloadMarkdown()"
+                    title="Download as file"
+                >
+                    💾 Download
+                </button>
+            </div>
+        </div>
+
+        <div class="session-info" *ngIf="result.sessionId">
+            <small>Session ID: {{ result.sessionId }}</small>
+        </div>
+
+        <!-- Structured View -->
+        <div class="structured-view">
+            <!-- Shift Summary -->
+            <section class="section">
+                <h3>📋 Shift Summary</h3>
+                <ul
+                    class="summary-list"
+                    *ngIf="result.json.shiftSummary.length > 0"
+                >
+                    <li *ngFor="let item of result.json.shiftSummary">
+                        {{ item }}
+                    </li>
+                </ul>
+                <p
+                    class="empty-state"
+                    *ngIf="result.json.shiftSummary.length === 0"
+                >
+                    No summary available
+                </p>
+            </section>
+
+            <!-- Critical Alarms -->
+            <section class="section">
+                <h3>🚨 Critical Alarms & Meaning</h3>
+                <div
+                    class="alarms-list"
+                    *ngIf="result.json.criticalAlarms.length > 0"
+                >
+                    <div
+                        class="alarm-card"
+                        *ngFor="let alarm of result.json.criticalAlarms"
+                    >
+                        <h4>{{ alarm.alarm }}</h4>
+                        <p><strong>Meaning:</strong> {{ alarm.meaning }}</p>
+                    </div>
+                </div>
+                <p
+                    class="empty-state"
+                    *ngIf="result.json.criticalAlarms.length === 0"
+                >
+                    No critical alarms reported
+                </p>
+            </section>
+
+            <!-- Open Issues -->
+            <section class="section">
+                <h3>⚠️ Open Issues</h3>
+                <div
+                    class="issues-list"
+                    *ngIf="result.json.openIssues.length > 0"
+                >
+                    <div
+                        class="issue-card"
+                        *ngFor="let issue of result.json.openIssues"
+                        [ngClass]="getPriorityClass(issue.priority)"
+                    >
+                        <div class="issue-header">
+                            <span class="priority-badge">
+                                {{ getPriorityEmoji(issue.priority) }}
+                                {{ issue.priority }}
+                            </span>
+                            <span
+                                class="confidence-badge"
+                                [ngClass]="getConfidenceClass(issue.confidence)"
+                            >
+                                {{ issue.confidence }}% confidence
+                            </span>
+                        </div>
+                        <p class="issue-description">{{ issue.issue }}</p>
+                    </div>
+                </div>
+                <p
+                    class="empty-state"
+                    *ngIf="result.json.openIssues.length === 0"
+                >
+                    No open issues identified
+                </p>
+            </section>
+
+            <!-- Recommended Actions -->
+            <section class="section">
+                <h3>✅ Recommended Actions</h3>
+                <ol
+                    class="actions-list"
+                    *ngIf="result.json.recommendedActions.length > 0"
+                >
+                    <li *ngFor="let action of result.json.recommendedActions">
+                        {{ action }}
+                    </li>
+                </ol>
+                <p
+                    class="empty-state"
+                    *ngIf="result.json.recommendedActions.length === 0"
+                >
+                    No recommended actions
+                </p>
+            </section>
+
+            <!-- Questions for Next Shift -->
+            <section class="section">
+                <h3>❓ Questions for Next Shift</h3>
+                <ul
+                    class="questions-list"
+                    *ngIf="result.json.questions.length > 0"
+                >
+                    <li *ngFor="let question of result.json.questions">
+                        {{ question }}
+                    </li>
+                </ul>
+                <p
+                    class="empty-state"
+                    *ngIf="result.json.questions.length === 0"
+                >
+                    No questions
+                </p>
+            </section>
+        </div>
+
+        <!-- Markdown Preview -->
+        <div class="markdown-preview">
+            <h3>📄 Formatted Report</h3>
+            <div
+                class="markdown-content"
+                [innerHTML]="getRenderedMarkdown()"
+            ></div>
+        </div>
+    </div>
+</div>

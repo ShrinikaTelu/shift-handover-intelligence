@@ -1,0 +1,24 @@
+{
+    "facility": "BioManufacturing Plant 2",
+    "timestamp": "2026-01-07T06:30:00Z",
+    "alarms": [
+        {
+            "id": "B201-AGI-OC",
+            "equipment": "Bioreactor B-201 Agitator",
+            "description": "Motor Overcurrent Trip",
+            "timestamp": "2026-01-07T03:30:15Z",
+            "severity": "High",
+            "value": "18.5 A",
+            "setpoint": "15.0 A"
+        },
+        {
+            "id": "B201-DO-HI",
+            "equipment": "Bioreactor B-201",
+            "description": "Dissolved Oxygen High",
+            "timestamp": "2026-01-07T03:30:45Z",
+            "severity": "Medium",
+            "value": "45%",
+            "setpoint": "38%"
+        }
+    ]
+}

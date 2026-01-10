@@ -1,0 +1,17 @@
+Night Shift - Bioreactor B-201 batch #VAC-2401-07
+
+Batch started at 22:00 yesterday, currently 8.5 hours in.
+Temperature holding at 37.2°C ±0.1°C. pH stable at 7.1.
+Dissolved oxygen (DO) spiked to 45% at 03:30 when agitator
+motor tripped on overcurrent. Reset and restarted - back to
+normal at 35% DO.
+
+Concern: Cell viability might be affected by the oxygen spike.
+We're past the critical growth phase so might be OK but
+QA needs to verify.
+
+Clean-in-place (CIP) system for Tank T-105 completed at 05:00.
+Ready for next batch.
+
+Raw material delivery expected at 08:00 - glycerol and peptone.
+Make sure receiving team checks COA certificates.

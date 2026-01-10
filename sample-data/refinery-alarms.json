@@ -1,0 +1,30 @@
+{
+    "unit": "CDU-3 Crude Distillation",
+    "incident": "Emergency Shutdown",
+    "timestamp": "2026-01-07T04:15:00Z",
+    "alarms": [
+        {
+            "id": "F301-FLAME-FAIL",
+            "description": "Furnace Flame Failure",
+            "timestamp": "2026-01-07T04:15:03Z",
+            "severity": "Critical",
+            "action": "ESD Activated"
+        },
+        {
+            "id": "F301-FUEL-PRESS-LOW",
+            "description": "Fuel Gas Pressure Low",
+            "timestamp": "2026-01-07T04:14:45Z",
+            "severity": "High",
+            "value": "3.2 bar",
+            "normal": "5.0-5.5 bar"
+        },
+        {
+            "id": "F301-TEMP-DROP",
+            "description": "Furnace Temperature Dropping",
+            "timestamp": "2026-01-07T04:15:10Z",
+            "severity": "High",
+            "value": "380°C",
+            "trend": "Rapidly decreasing"
+        }
+    ]
+}
