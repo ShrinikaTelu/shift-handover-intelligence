@@ -3,6 +3,7 @@ import os
 import json
 import logging
 from typing import Dict, Any, Tuple, Optional
+from pathlib import Path
 from dotenv import load_dotenv
 from utils import (
     extract_json_from_text,
@@ -12,7 +13,9 @@ from utils import (
     format_alarms_json
 )
 
-load_dotenv()
+# Load .env from project root (two levels up from this file)
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 logger = logging.getLogger(__name__)
 

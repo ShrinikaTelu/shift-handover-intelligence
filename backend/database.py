@@ -3,11 +3,14 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, Text, DateTime
 from datetime import datetime
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 import json
 from typing import Dict, Any, Optional
 
-load_dotenv()
+# Load .env from project root (two levels up from this file)
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./handover.db")
 
