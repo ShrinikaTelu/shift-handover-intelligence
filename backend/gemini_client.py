@@ -2,7 +2,7 @@ from google import genai
 import os
 import json
 import logging
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 from dotenv import load_dotenv
 from utils import (
     extract_json_from_text,
@@ -68,8 +68,8 @@ Then on a new line, provide the markdown report starting with # Shift Handover I
     def _build_prompt(
         self,
         shift_notes: str,
-        alarms_json: Dict[str, Any] | None,
-        trends_csv: str | None
+        alarms_json: Optional[Dict[str, Any]],
+        trends_csv: Optional[str]
     ) -> str:
         """Build the complete prompt with all context"""
 
@@ -145,8 +145,8 @@ Return ONLY the JSON object, nothing else."""
     def generate_handover(
         self,
         shift_notes: str,
-        alarms_json: Dict[str, Any] | None = None,
-        trends_csv: str | None = None
+        alarms_json: Optional[Dict[str, Any]] = None,
+        trends_csv: Optional[str] = None
     ) -> Tuple[str, Dict[str, Any]]:
         """
         Generate handover summary using Gemini.

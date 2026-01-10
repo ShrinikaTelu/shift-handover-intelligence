@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from contextlib import asynccontextmanager
+from typing import Optional
 import uuid
 from datetime import datetime
 import logging
@@ -49,7 +50,7 @@ app.add_middleware(
 )
 
 # Initialize Gemini client (will be created on first request)
-gemini_client: GeminiClient | None = None
+gemini_client: Optional[GeminiClient] = None
 
 
 def get_gemini_client() -> GeminiClient:
