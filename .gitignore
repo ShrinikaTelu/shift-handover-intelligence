@@ -6,6 +6,7 @@
 # Dependencies
 node_modules/
 backend/venv/
+backend/venv_shift/
 __pycache__/
 *.py[cod]
 *$py.class
@@ -54,7 +55,6 @@ lerna-debug.log*
 
 # OS files
 .DS_Store
-.env.example
 
 # Build outputs
 dist/
