@@ -136,7 +136,7 @@ Shift Handover Intelligence uses AI to:
 │             ▼                                                        │
 │   ┌─────────────────────────────────────────────────────────────┐   │
 │   │                   Google Gemini AI API                       │   │
-│   │                  (gemini-1.5-flash model)                    │   │
+│   │               (gemini-3-flash-preview model)                 │   │
 │   └─────────────────────────────────────────────────────────────┘   │
 │                                                                      │
 │   ┌─────────────────────────────────────────────────────────────┐   │
@@ -268,7 +268,8 @@ Professional PDF reports generated using ReportLab library:
 | Pydantic | 2.5.3 | Data validation |
 | SQLAlchemy | 2.0.25 | Database ORM |
 | aiosqlite | 0.19.0 | Async SQLite |
-| google-genai | 0.2.2 | Gemini AI SDK |
+| google-genai | 0.2.2 | Python SDK for Gemini API |
+| **Gemini 3** | gemini-3-flash-preview | AI Model (via SDK above) |
 | ReportLab | 4.0.9 | PDF generation |
 | python-dotenv | 1.0.0 | Environment config |
 
