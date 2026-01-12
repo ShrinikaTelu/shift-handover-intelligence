@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HandoverRequest } from '../../models/handover.model';
@@ -12,11 +12,43 @@ import { HandoverRequest } from '../../models/handover.model';
 })
 export class HandoverFormComponent {
     @Output() generateHandover = new EventEmitter<HandoverRequest>();
+    @ViewChild('recordingStatus') recordingStatusRef!: ElementRef;
+
+    constructor(private cdr: ChangeDetectorRef) {}
 
     shiftNotes: string = '';
     alarmsFile: File | null = null;
     trendsFile: File | null = null;
     isLoading: boolean = false;
+
+    // Voice recording properties
+    isRecording: boolean = false;
+    mediaRecorder: MediaRecorder | null = null;
+    audioChunks: Blob[] = [];
+    recordingTime: number = 0;
+    recordingTimer: any = null;
+    recordedAudioBlob: Blob | null = null;
+    recordingAudioUrl: string = '';
+    
+    // Speech recognition properties
+    recognition: any = null;
+    isTranscribing: boolean = false;
+    
+    // Playback properties
+    audioElement: HTMLAudioElement | null = null;
+    isPlaying: boolean = false;
+    isPreparing: boolean = false;
+    currentTime: number = 0;
+    duration: number = 0;
+    progress: number = 0; // 0-100 percentage
+    playbackComplete: boolean = false;
+    recordingConfirmed: boolean = false;
+    
+    // Store original shift notes for cancel
+    shiftNotesBeforeRecording: string = '';
+    
+    // Playback update interval
+    playbackInterval: any = null;
 
     onAlarmsFileChange(event: Event): void {
         const input = event.target as HTMLInputElement;
@@ -82,6 +114,344 @@ export class HandoverFormComponent {
 
     setLoading(loading: boolean): void {
         this.isLoading = loading;
+    }
+
+    // Voice Recording Methods - Live Voice-to-Text
+    async startRecording(): Promise<void> {
+        try {
+            // Save shift notes state before recording
+            this.shiftNotesBeforeRecording = this.shiftNotes;
+            
+            // Get user media (microphone)
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // Set up MediaRecorder for audio capture
+            this.mediaRecorder = new MediaRecorder(stream);
+            this.audioChunks = [];
+            this.recordingTime = 0;
+            this.isRecording = true;
+
+            this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
+                this.audioChunks.push(event.data);
+            };
+
+            this.mediaRecorder.onstop = () => {
+                console.log('Recording stopped');
+                const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                this.recordedAudioBlob = audioBlob;
+                this.recordingAudioUrl = URL.createObjectURL(audioBlob);
+                this.cdr.detectChanges();
+            };
+
+            this.mediaRecorder.start();
+
+            // Start recording timer
+            this.recordingTimer = setInterval(() => {
+                this.recordingTime++;
+                this.cdr.detectChanges();
+            }, 1000);
+
+            // Initialize and start speech recognition
+            this.startLiveTranscription();
+
+        } catch (error) {
+            console.error('Error accessing microphone:', error);
+            alert('Unable to access microphone. Please check permissions.');
+        }
+    }
+
+    private startLiveTranscription(): void {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+            console.log('Web Speech API not available');
+            alert('Speech recognition not available in your browser');
+            return;
+        }
+
+        this.recognition = new SpeechRecognition();
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+        this.recognition.language = 'en-US';
+
+        let interimTranscript = '';
+        let finalTranscriptChunk = '';
+
+        this.recognition.onstart = () => {
+            console.log('Speech recognition started');
+            this.isTranscribing = true;
+            this.cdr.detectChanges();
+        };
+
+        this.recognition.onresult = (event: any) => {
+            interimTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+
+                if (event.results[i].isFinal) {
+                    // Final result - add to shift notes
+                    finalTranscriptChunk = transcript;
+                    console.log('Final transcript:', transcript);
+                } else {
+                    // Interim result
+                    interimTranscript += transcript;
+                }
+            }
+
+            // Update shift notes with final text
+            if (finalTranscriptChunk) {
+                const textToAdd = finalTranscriptChunk + ' ';
+                this.shiftNotes += textToAdd;
+                finalTranscriptChunk = '';
+                this.cdr.detectChanges();
+            }
+        };
+
+        this.recognition.onerror = (event: any) => {
+            console.error('Speech recognition error:', event.error);
+        };
+
+        this.recognition.onend = () => {
+            console.log('Speech recognition ended');
+            this.isTranscribing = false;
+            this.cdr.detectChanges();
+        };
+
+        try {
+            this.recognition.start();
+        } catch (e) {
+            console.error('Error starting recognition:', e);
+        }
+    }
+
+    stopRecording(): void {
+        if (this.mediaRecorder && this.isRecording) {
+            console.log('Stopping recording...');
+            this.mediaRecorder.stop();
+            this.isRecording = false;
+            
+            // Stop recognition
+            if (this.recognition) {
+                this.recognition.stop();
+            }
+            
+            clearInterval(this.recordingTimer);
+
+            // Stop all audio tracks
+            this.mediaRecorder.stream.getTracks().forEach((track: MediaStreamTrack) => {
+                track.stop();
+            });
+            
+            this.cdr.detectChanges();
+        }
+    }
+
+    cancelRecording(): void {
+        // HARD STOP: Immediately stop all audio playback
+        if (this.audioElement) {
+            this.audioElement.pause();
+            this.audioElement.currentTime = 0;
+            this.audioElement = null;
+        }
+        
+        // Stop recording if in progress
+        if (this.mediaRecorder && this.isRecording) {
+            this.mediaRecorder.stop();
+            this.isRecording = false;
+            
+            if (this.recognition) {
+                this.recognition.stop();
+            }
+            
+            clearInterval(this.recordingTimer);
+            
+            this.mediaRecorder.stream.getTracks().forEach((track: MediaStreamTrack) => {
+                track.stop();
+            });
+        }
+        
+        // Stop playback updater
+        this.stopPlaybackUpdater();
+        
+        // Clean up audio URL
+        if (this.recordingAudioUrl) {
+            URL.revokeObjectURL(this.recordingAudioUrl);
+            this.recordingAudioUrl = '';
+        }
+        
+        // Restore shift notes to state before recording started
+        this.shiftNotes = this.shiftNotesBeforeRecording;
+        
+        // Reset all recording and playback state
+        this.recordedAudioBlob = null;
+        this.recordingTime = 0;
+        this.isTranscribing = false;
+        this.isPlaying = false;
+        this.isPreparing = false;
+        this.currentTime = 0;
+        this.duration = 0;
+        this.progress = 0;
+        this.playbackComplete = false;
+        this.recordingConfirmed = false;
+        
+        this.cdr.detectChanges();
+    }
+
+    playRecording(): void {
+        if (!this.audioElement && this.recordingAudioUrl) {
+            this.audioElement = new Audio(this.recordingAudioUrl);
+            this.isPreparing = true;
+            this.cdr.detectChanges();
+
+            // When metadata is loaded, get duration
+            this.audioElement.onloadedmetadata = () => {
+                this.duration = this.audioElement!.duration;
+                this.isPreparing = false;
+                this.cdr.detectChanges();
+            };
+
+            // When audio starts playing
+            this.audioElement.onplay = () => {
+                this.isPlaying = true;
+                this.playbackComplete = false;
+                this.cdr.detectChanges();
+                this.startPlaybackUpdater();
+            };
+
+            // When audio pauses
+            this.audioElement.onpause = () => {
+                this.isPlaying = false;
+                this.cdr.detectChanges();
+            };
+
+            // When audio ends
+            this.audioElement.onended = () => {
+                this.isPlaying = false;
+                this.playbackComplete = true;
+                this.stopPlaybackUpdater();
+                this.cdr.detectChanges();
+            };
+
+            // Update current time and progress
+            this.audioElement.ontimeupdate = () => {
+                this.currentTime = this.audioElement!.currentTime;
+                this.progress = (this.currentTime / this.duration) * 100;
+                this.cdr.detectChanges();
+            };
+        }
+
+        if (this.audioElement) {
+            this.audioElement.play().catch(err => console.error('Playback error:', err));
+        }
+    }
+
+    togglePlayPause(): void {
+        // First Play: Initialize audio element if not already done
+        if (!this.audioElement && this.recordingAudioUrl) {
+            this.playRecording();
+            return; // playRecording() will handle the play() call
+        }
+
+        // Subsequent clicks: Toggle play/pause
+        if (this.audioElement) {
+            if (this.isPlaying) {
+                this.audioElement.pause();
+            } else {
+                this.audioElement.play().catch(err => console.error('Playback error:', err));
+            }
+        }
+    }
+
+    replayRecording(): void {
+        // If audio element doesn't exist, create it first
+        if (!this.audioElement && this.recordingAudioUrl) {
+            this.playRecording(); // Initialize audio element and start playback
+        } else if (this.audioElement) {
+            // Reset to beginning and play
+            this.audioElement.currentTime = 0;
+            this.playbackComplete = false;
+            this.cdr.detectChanges();
+            this.audioElement.play().catch(err => console.error('Playback error:', err));
+        }
+    }
+
+    onProgressBarClick(event: MouseEvent): void {
+        if (!this.audioElement || !this.duration) return;
+
+        const progressBar = event.target as HTMLElement;
+        const rect = progressBar.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const percentage = clickX / rect.width;
+        const newTime = percentage * this.duration;
+
+        this.audioElement.currentTime = Math.max(0, Math.min(newTime, this.duration));
+        this.currentTime = this.audioElement.currentTime;
+        this.progress = (this.currentTime / this.duration) * 100;
+        this.cdr.detectChanges();
+    }
+
+    private startPlaybackUpdater(): void {
+        if (this.playbackInterval) {
+            clearInterval(this.playbackInterval);
+        }
+        this.playbackInterval = setInterval(() => {
+            if (this.audioElement && this.isPlaying) {
+                this.currentTime = this.audioElement.currentTime;
+                this.progress = (this.currentTime / this.duration) * 100;
+                this.cdr.detectChanges();
+            }
+        }, 100);
+    }
+
+    private stopPlaybackUpdater(): void {
+        if (this.playbackInterval) {
+            clearInterval(this.playbackInterval);
+            this.playbackInterval = null;
+        }
+    }
+
+    confirmRecording(): void {
+        this.recordingConfirmed = true;
+        this.stopPlaybackUpdater();
+        if (this.audioElement) {
+            this.audioElement.pause();
+        }
+        this.cdr.detectChanges();
+    }
+
+    clearRecording(): void {
+        // Clean up playback
+        this.stopPlaybackUpdater();
+        if (this.audioElement) {
+            this.audioElement.pause();
+            this.audioElement = null;
+        }
+
+        // Clean up audio URL
+        if (this.recordingAudioUrl) {
+            URL.revokeObjectURL(this.recordingAudioUrl);
+            this.recordingAudioUrl = '';
+        }
+        
+        this.recordedAudioBlob = null;
+        this.recordingTime = 0;
+        this.audioChunks = [];
+        this.isPlaying = false;
+        this.isPreparing = false;
+        this.currentTime = 0;
+        this.duration = 0;
+        this.progress = 0;
+        this.playbackComplete = false;
+        this.recordingConfirmed = false;
+        
+        this.cdr.detectChanges();
+    }
+
+    formatTime(seconds: number): string {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
     loadSampleData(sampleNumber: number): void {

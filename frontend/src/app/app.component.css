@@ -1,5 +1,37 @@
 .app-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px 0;
+    background-image: url('/background.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    padding: 40px 0;
+    position: relative;
 }
+
+/* Overlay for better text readability */
+.app-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes drift {
+    0%, 100% {
+        transform: translate(0, 0);
+    }
+    50% {
+        transform: translate(30px, 30px);
+    }
+}
+
+.app-container > * {
+    position: relative;
+    z-index: 1;
+}
+

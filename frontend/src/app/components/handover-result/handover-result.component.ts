@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HandoverResponse } from '../../models/handover.model';
+import { HandoverService } from '../../services/handover.service';
 
 @Component({
     selector: 'app-handover-result',
@@ -13,8 +14,12 @@ import { HandoverResponse } from '../../models/handover.model';
 export class HandoverResultComponent {
     @Input() result: HandoverResponse | null = null;
     @Input() error: string | null = null;
+    isDownloadingPdf = false;
 
-    constructor(private sanitizer: DomSanitizer) {}
+    constructor(
+        private sanitizer: DomSanitizer,
+        private handoverService: HandoverService
+    ) {}
 
     copyToClipboard(): void {
         if (!this.result?.markdown) return;
@@ -181,5 +186,41 @@ export class HandoverResultComponent {
             .slice(0, 10)}.md`;
         link.click();
         window.URL.revokeObjectURL(url);
+    }
+
+    downloadPdf(): void {
+        if (!this.result) return;
+
+        this.isDownloadingPdf = true;
+
+        // Use session ID if available, otherwise download via POST
+        if (this.result.sessionId) {
+            this.handoverService.downloadPdfBySession(this.result.sessionId).subscribe({
+                next: (blob: Blob) => {
+                    this.savePdfFile(blob);
+                    this.isDownloadingPdf = false;
+                },
+                error: (err: any) => {
+                    console.error('Failed to download PDF:', err);
+                    alert('❌ Failed to download PDF. Please try again.');
+                    this.isDownloadingPdf = false;
+                }
+            });
+        } else {
+            alert('Session ID not available. Please regenerate the handover first.');
+            this.isDownloadingPdf = false;
+        }
+    }
+
+    private savePdfFile(blob: Blob): void {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `shift-handover-${new Date()
+            .toISOString()
+            .slice(0, 10)}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        alert('✅ PDF downloaded successfully!');
     }
 }

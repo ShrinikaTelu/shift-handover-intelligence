@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -12,6 +12,7 @@ import os
 from schemas import HandoverRequest, HandoverResponse, ErrorResponse, HandoverStructured
 from gemini_client import GeminiClient
 from database import init_db, get_session, save_handover_session
+from pdf_generator import generate_pdf_from_structured_data
 
 # Configure logging
 logging.basicConfig(
@@ -194,6 +195,90 @@ async def get_handover(
         json=HandoverStructured(**json_output),
         sessionId=session.session_id
     )
+
+
+@app.post("/api/handover/download-pdf")
+async def download_pdf(request: HandoverRequest):
+    """
+    Generate and download a handover report as a professional PDF.
+    
+    Takes the same input as generate_handover but returns a PDF file.
+    """
+    try:
+        from fastapi.responses import StreamingResponse
+        from pdf_generator import generate_pdf_from_markdown
+        
+        # Generate handover using Gemini
+        client = get_gemini_client()
+        markdown, json_data = client.generate_handover(
+            shift_notes=request.shiftNotes,
+            alarms_json=request.alarmsJson,
+            trends_csv=request.trendsCsv
+        )
+
+        # Validate the structured data
+        structured_handover = HandoverStructured(**json_data)
+
+        # Generate PDF from markdown (formatted report)
+        pdf_bytes = generate_pdf_from_markdown(markdown)
+
+        # Create response with PDF file
+        timestamp = datetime.now().strftime("%Y-%m-%d")
+        filename = f"shift-handover-{timestamp}.pdf"
+
+        return StreamingResponse(
+            iter([pdf_bytes]),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+
+    except Exception as e:
+        logger.error(f"PDF generation error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate PDF: {str(e)}"
+        )
+
+
+@app.get("/api/handover/{session_id}/download-pdf")
+async def download_pdf_by_session(
+    session_id: str,
+    db: AsyncSession = Depends(get_session)
+):
+    """Download a previously generated handover as PDF by session ID"""
+
+    from database import get_handover_session
+    from fastapi.responses import StreamingResponse
+    from pdf_generator import generate_pdf_from_markdown
+    import json
+
+    session = await get_handover_session(db, session_id)
+
+    if not session:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Handover session {session_id} not found"
+        )
+
+    try:
+        # Generate PDF from markdown (formatted report)
+        pdf_bytes = generate_pdf_from_markdown(session.markdown_output)
+
+        timestamp = datetime.now().strftime("%Y-%m-%d")
+        filename = f"shift-handover-{timestamp}.pdf"
+
+        return StreamingResponse(
+            iter([pdf_bytes]),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+
+    except Exception as e:
+        logger.error(f"PDF generation error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate PDF: {str(e)}"
+        )
 
 
 if __name__ == "__main__":

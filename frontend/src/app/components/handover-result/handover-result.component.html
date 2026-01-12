@@ -22,9 +22,17 @@
                 <button
                     class="btn-action"
                     (click)="downloadMarkdown()"
-                    title="Download as file"
+                    title="Download as Markdown file"
                 >
-                    💾 Download
+                    📄 Download MD
+                </button>
+                <button
+                    class="btn-action btn-primary"
+                    (click)="downloadPdf()"
+                    [disabled]="isDownloadingPdf"
+                    title="Download as PDF"
+                >
+                    {{ isDownloadingPdf ? '⏳ Generating PDF...' : '� Download PDF' }}
                 </button>
             </div>
         </div>
@@ -151,13 +159,6 @@
             </section>
         </div>
 
-        <!-- Markdown Preview -->
-        <div class="markdown-preview">
-            <h3>📄 Formatted Report</h3>
-            <div
-                class="markdown-content"
-                [innerHTML]="getRenderedMarkdown()"
-            ></div>
-        </div>
     </div>
 </div>
+

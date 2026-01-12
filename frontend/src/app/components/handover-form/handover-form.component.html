@@ -23,8 +23,136 @@ Example:
 - Issues and concerns
 - Actions taken"
                     required
-                    [disabled]="isLoading"
+                    [disabled]="isLoading || isRecording"
                 ></textarea>
+
+                <!-- Voice Recording Section -->
+                <div class="voice-recording-section">
+                    <div class="voice-controls">
+                        <!-- Start Recording Button -->
+                        <button
+                            type="button"
+                            class="voice-button"
+                            [disabled]="isLoading"
+                            (click)="startRecording()"
+                            *ngIf="!isRecording && !recordingAudioUrl"
+                        >
+                            <span class="voice-icon">🎤</span>
+                            <span class="voice-label">Start Recording</span>
+                        </button>
+
+                        <!-- Recording Container (shows when recording) -->
+                        <div class="recording-container" *ngIf="isRecording">
+                            <div class="recording-info">
+                                <span class="recording-indicator">● Recording</span>
+                                <span class="recording-timer">{{ formatTime(recordingTime) }}</span>
+                            </div>
+
+                            <div class="recording-button-group">
+                                <button
+                                    type="button"
+                                    class="btn-stop-recording"
+                                    (click)="stopRecording()"
+                                >
+                                    Stop Recording
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn-cancel-during-recording"
+                                    (click)="cancelRecording()"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Playback Controls (shows after recording stops) -->
+                        <div class="playback-container" *ngIf="!isRecording && recordingAudioUrl && !recordingConfirmed">
+                            <!-- Playback Panel -->
+                            <div class="playback-panel">
+                                <!-- Control Row: Play Button + Progress + Time -->
+                                <div class="playback-control-row">
+                                    <!-- Play/Pause Button -->
+                                    <button
+                                        type="button"
+                                        class="btn-play-pause"
+                                        (click)="togglePlayPause()"
+                                        [disabled]="isPreparing"
+                                    >
+                                        <span class="play-icon">{{ isPlaying ? '⏸' : '▶' }}</span>
+                                    </button>
+
+                                    <!-- Progress Section -->
+                                    <div class="playback-progress">
+                                        <!-- Current Time -->
+                                        <span class="time-label">{{ formatTime(currentTime) }}</span>
+
+                                        <!-- Progress Bar -->
+                                        <div
+                                            class="progress-bar-container"
+                                            (click)="onProgressBarClick($event)"
+                                        >
+                                            <div
+                                                class="progress-bar"
+                                                [style.width.%]="progress"
+                                                [class.buffering]="isPreparing"
+                                            ></div>
+                                        </div>
+
+                                        <!-- Duration -->
+                                        <span class="time-label">{{ formatTime(duration) }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="playback-button-group">
+                                    <button
+                                        type="button"
+                                        class="btn-action btn-use"
+                                        (click)="confirmRecording()"
+                                    >
+                                        Use Recording
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn-action btn-replay"
+                                        (click)="replayRecording()"
+                                    >
+                                        Replay
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn-action btn-cancel"
+                                        (click)="cancelRecording()"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recording Confirmed State -->
+                        <div class="recording-confirmed-panel" *ngIf="!isRecording && recordingAudioUrl && recordingConfirmed">
+                            <div class="confirmed-indicator">
+                                <span class="confirmed-icon">✅</span>
+                                <span class="confirmed-text">Recording saved and added to shift notes</span>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn-new-recording"
+                                (click)="clearRecording()"
+                            >
+                                <span>🎤 Record Another</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Voice Recording Hint -->
+                    <small class="voice-hint" *ngIf="!isRecording && !recordingAudioUrl">
+                        Start recording and speak naturally. Your voice will be transcribed into the shift notes.
+                    </small>
+                </div>
             </div>
 
             <!-- Sample Data Buttons -->
@@ -55,40 +183,51 @@ Example:
                 </button>
             </div>
 
-            <!-- Alarms JSON Upload -->
-            <div class="form-group">
-                <label for="alarmsFile">
-                    <strong>Alarms Data</strong>
-                    <span class="optional">(optional JSON file)</span>
-                </label>
-                <input
-                    type="file"
-                    id="alarmsFile"
-                    (change)="onAlarmsFileChange($event)"
-                    accept=".json"
-                    [disabled]="isLoading"
-                />
-                <small class="help-text"
-                    >Upload active alarms in JSON format</small
-                >
-            </div>
+            <!-- File Uploads Side by Side -->
+            <div class="file-uploads-row">
+                <!-- Alarms JSON Upload -->
+                <div class="form-group">
+                    <label for="alarmsFile">
+                        <strong>Alarms Data</strong>
+                        <span class="optional">(optional)</span>
+                    </label>
+                    <div class="file-upload-wrapper">
+                        <input
+                            type="file"
+                            id="alarmsFile"
+                            (change)="onAlarmsFileChange($event)"
+                            accept=".json"
+                            [disabled]="isLoading"
+                            class="file-input"
+                        />
+                        <label for="alarmsFile" class="file-upload-label">
+                            <span class="upload-icon">📁</span>
+                            <span class="upload-text">Upload JSON</span>
+                        </label>
+                    </div>
+                </div>
 
-            <!-- Trends CSV Upload -->
-            <div class="form-group">
-                <label for="trendsFile">
-                    <strong>Trend Data</strong>
-                    <span class="optional">(optional CSV file)</span>
-                </label>
-                <input
-                    type="file"
-                    id="trendsFile"
-                    (change)="onTrendsFileChange($event)"
-                    accept=".csv"
-                    [disabled]="isLoading"
-                />
-                <small class="help-text"
-                    >Upload process trends in CSV format</small
-                >
+                <!-- Trends CSV Upload -->
+                <div class="form-group">
+                    <label for="trendsFile">
+                        <strong>Trend Data</strong>
+                        <span class="optional">(optional)</span>
+                    </label>
+                    <div class="file-upload-wrapper">
+                        <input
+                            type="file"
+                            id="trendsFile"
+                            (change)="onTrendsFileChange($event)"
+                            accept=".csv"
+                            [disabled]="isLoading"
+                            class="file-input"
+                        />
+                        <label for="trendsFile" class="file-upload-label">
+                            <span class="upload-icon">📊</span>
+                            <span class="upload-text">Upload CSV</span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <!-- Submit Button -->
@@ -107,3 +246,5 @@ Example:
         </form>
     </div>
 </div>
+
+

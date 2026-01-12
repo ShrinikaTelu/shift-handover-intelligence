@@ -27,6 +27,22 @@ export class HandoverService {
             .pipe(catchError(this.handleError));
     }
 
+    downloadPdfBySession(sessionId: string): Observable<Blob> {
+        return this.http
+            .get(`${this.API_URL}/handover/${sessionId}/download-pdf`, {
+                responseType: 'blob'
+            })
+            .pipe(catchError(this.handleError));
+    }
+
+    downloadPdf(request: HandoverRequest): Observable<Blob> {
+        return this.http
+            .post(`${this.API_URL}/handover/download-pdf`, request, {
+                responseType: 'blob'
+            })
+            .pipe(catchError(this.handleError));
+    }
+
     checkHealth(): Observable<any> {
         return this.http
             .get('http://localhost:8000/health')
