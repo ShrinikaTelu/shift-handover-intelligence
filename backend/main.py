@@ -80,6 +80,26 @@ async def global_exception_handler(request, exc):
     )
 
 
+@app.get("/")
+async def root():
+    """Root endpoint with API information"""
+    return {
+        "message": "Welcome to Shift Handover Intelligence API",
+        "service": "shift-handover-intelligence",
+        "version": "1.0.0",
+        "status": "running",
+        "endpoints": {
+            "health": "/health",
+            "generate_handover": "/api/handover/generate",
+            "get_handover": "/api/handover/{session_id}",
+            "download_pdf": "/api/handover/download-pdf",
+            "download_pdf_by_session": "/api/handover/{session_id}/download-pdf"
+        },
+        "docs": "/docs",
+        "redoc": "/redoc"
+    }
+
+
 @app.get("/health")
 async def health_check(db: AsyncSession = Depends(get_session)):
     """Health check endpoint with dependency checks"""
