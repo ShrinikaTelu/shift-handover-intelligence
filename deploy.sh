@@ -1,223 +1,161 @@
-#!/bin/bash
+#!/bin/bash#!/bin/bash
 
-# Shift Handover Intelligence - Quick Deployment Script
-# This script helps you deploy the application locally or to cloud
+# Shift Handover Intelligence - Full Stack Deployment Script# Shift Handover Intelligence - Full Stack Deployment Script
 
-set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "🚀 Shift Handover Intelligence - Deployment Helper"
-echo "=================================================="
-echo ""
+set -eset -e
 
-# Check for required tools
-check_requirements() {
-    echo "📋 Checking prerequisites..."
-    
-    if ! command -v python3 &> /dev/null; then
-        echo "❌ Python 3.9+ not found"
-        exit 1
-    fi
-    
-    if ! command -v node &> /dev/null; then
-        echo "❌ Node.js not found"
-        exit 1
-    fi
-    
-    echo "✅ Python: $(python3 --version)"
-    echo "✅ Node.js: $(node --version)"
-    echo ""
-}
 
-# Setup environment
-setup_env() {
-    echo "🔧 Setting up environment..."
-    
-    if [ ! -f "$SCRIPT_DIR/.env" ]; then
-        if [ -f "$SCRIPT_DIR/.env.example" ]; then
-            cp "$SCRIPT_DIR/.env.example" "$SCRIPT_DIR/.env"
-            echo "✅ Created .env from .env.example"
-            echo "⚠️  IMPORTANT: Update .env with your GOOGLE_API_KEY"
-            read -p "Press Enter after updating .env..."
-        else
-            echo "❌ .env.example not found"
-            exit 1
-        fi
-    else
-        echo "✅ .env already exists"
-    fi
-}
 
-# Install backend dependencies
-install_backend() {
-    echo ""
-    echo "🔧 Installing backend dependencies..."
-    cd "$SCRIPT_DIR/backend"
-    
-    if python3 -m pip install -r requirements.txt; then
-        echo "✅ Backend dependencies installed"
-    else
-        echo "❌ Failed to install backend dependencies"
-        exit 1
-    fi
-    
-    cd "$SCRIPT_DIR"
-}
+# Colors for output# Colors for output
 
-# Install frontend dependencies
-install_frontend() {
-    echo ""
-    echo "🔧 Installing frontend dependencies..."
-    cd "$SCRIPT_DIR/frontend"
-    
-    if npm install; then
-        echo "✅ Frontend dependencies installed"
-    else
-        echo "❌ Failed to install frontend dependencies"
-        exit 1
-    fi
-    
-    cd "$SCRIPT_DIR"
-}
+GREEN='\033[0;32m'GREEN='\033[0;32m'
 
-# Start backend
-start_backend() {
-    echo ""
-    echo "🚀 Starting backend server (port 8000)..."
-    cd "$SCRIPT_DIR/backend"
-    
-    export PYTHONPATH="$SCRIPT_DIR/backend"
-    python3 << 'EOF' &
-from main import app
-import uvicorn
-uvicorn.run(app, host='127.0.0.1', port=8000)
-EOF
-    
-    echo "✅ Backend started (PID: $!)"
-    sleep 3
-    cd "$SCRIPT_DIR"
-}
+BLUE='\033[0;34m'BLUE='\033[0;34m'
 
-# Start frontend
-start_frontend() {
-    echo ""
-    echo "🚀 Starting frontend server (port 4200)..."
-    cd "$SCRIPT_DIR/frontend"
-    
-    npx ng serve --host 0.0.0.0 &
-    
-    echo "✅ Frontend started"
-    sleep 5
-    cd "$SCRIPT_DIR"
-}
+YELLOW='\033[1;33m'YELLOW='\033[1;33m'
 
-# Main menu
-show_menu() {
-    echo ""
-    echo "Select deployment option:"
-    echo "1) Install dependencies"
-    echo "2) Start backend only"
-    echo "3) Start frontend only"
-    echo "4) Start both (full local dev)"
-    echo "5) Docker deployment (requires Docker)"
-    echo "6) Cloud deployment (Railway.app)"
-    echo "7) Exit"
-    echo ""
-}
+RED='\033[0;31m'RED='\033[0;31m'
 
-# Docker deployment
-docker_deploy() {
-    echo ""
-    echo "🐳 Docker Deployment"
-    echo "==================="
-    
-    if ! command -v docker &> /dev/null; then
-        echo "❌ Docker not found. Install from https://docker.com"
-        return
-    fi
-    
-    if ! command -v docker-compose &> /dev/null; then
-        echo "❌ Docker Compose not found"
-        return
-    fi
-    
-    read -p "Build and start containers? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        cd "$SCRIPT_DIR"
-        docker-compose up -d
-        echo "✅ Containers started"
-        echo "Backend: http://localhost:8000"
-        echo "Frontend: http://localhost:3000"
-    fi
-}
+NC='\033[0m'NC='\033[0m'
 
-# Cloud deployment guide
-cloud_deploy() {
-    echo ""
-    echo "☁️  Cloud Deployment Guide"
-    echo "=========================="
-    echo ""
-    echo "Choose your deployment platform:"
-    echo ""
-    echo "1️⃣  Railway.app (RECOMMENDED)"
-    echo "   - Easiest setup for beginners"
-    echo "   - Free tier available"
-    echo "   - Git auto-deploy"
-    echo "   Steps:"
-    echo "   a) Create account at railway.app"
-    echo "   b) Create new project from GitHub repo"
-    echo "   c) Add environment variables"
-    echo "   d) Deploy automatically"
-    echo ""
-    echo "2️⃣  Render.com"
-    echo "   - Free tier (with limitations)"
-    echo "   - Good documentation"
-    echo ""
-    echo "3️⃣  Vercel (Frontend) + Railway (Backend)"
-    echo "   - Vercel: Deploy frontend"
-    echo "   - Railway: Deploy backend API"
-    echo ""
-    echo "4️⃣  Google Cloud Run"
-    echo "   - Native Google integration"
-    echo "   - Seamless Gemini API integration"
-    echo ""
-    
-    echo "Visit HACKATHON_DEPLOYMENT.md for detailed setup instructions"
-}
 
-# Main script logic
-main() {
-    check_requirements
-    setup_env
-    
-    while true; do
-        show_menu
-        read -p "Enter choice (1-7): " choice
-        
-        case $choice in
-            1)
-                install_backend
-                install_frontend
-                echo "✅ All dependencies installed"
-                ;;
-            2)
-                start_backend
-                echo ""
-                echo "Backend running on http://127.0.0.1:8000"
-                echo "API Docs: http://127.0.0.1:8000/docs"
-                ;;
-            3)
-                start_frontend
-                echo ""
-                echo "Frontend running on http://localhost:4200"
-                ;;
-            4)
-                install_backend
-                install_frontend
-                start_backend
-                start_frontend
+
+echo -e "${BLUE}================================${NC}"echo -e "${BLUE}================================${NC}"
+
+echo -e "${BLUE}Shift Handover Intelligence${NC}"echo -e "${BLUE}Shift Handover Intelligence${NC}"
+
+echo -e "${BLUE}Full Stack Deployment Script${NC}"echo -e "${BLUE}Full Stack Deployment Script${NC}"
+
+echo -e "${BLUE}================================${NC}"echo -e "${BLUE}================================${NC}"
+
+echo ""echo ""
+
+
+
+# Step 1: Get the Railway API URL# Step 1: Get the Railway API URL
+
+echo -e "${BLUE}Step 1: Configure Railway Backend URL${NC}"echo -e "${BLUE}Step 1: Configure Railway Backend URL${NC}"
+
+read -p "Enter your Railway API URL (e.g., https://shift-handover-backend-abc.up.railway.app): " RAILWAY_URLread -p "Enter your Railway API URL (e.g., https://shift-handover-backend-abc.up.railway.app): " RAILWAY_URL
+
+
+
+if [ -z "$RAILWAY_URL" ]; thenif [ -z "$RAILWAY_URL" ]; then
+
+  echo -e "${RED}❌ Railway URL cannot be empty!${NC}"  echo -e "${RED}❌ Railway URL cannot be empty!${NC}"
+
+  exit 1  exit 1
+
+fifi
+
+
+
+echo -e "${GREEN}✓ Using Railway API: $RAILWAY_URL${NC}"echo -e "${GREEN}✓ Using Railway API: $RAILWAY_URL${NC}"
+
+echo ""echo ""
+
+
+
+# Step 2: Update frontend API endpoint# Step 2: Update frontend API endpoint
+
+echo -e "${BLUE}Step 2: Updating frontend API endpoint...${NC}"echo -e "${BLUE}Step 2: Updating frontend API endpoint...${NC}"
+
+
+
+FRONTEND_SERVICE="./frontend/src/app/services/handover.service.ts"FRONTEND_SERVICE="./frontend/src/app/services/handover.service.ts"
+
+
+
+if [ -f "$FRONTEND_SERVICE" ]; thenif [ -f "$FRONTEND_SERVICE" ]; then
+
+  # Replace the localhost API URL with the Railway URL  # Replace the localhost API URL with the Railway URL
+
+  sed -i '' "s|http://localhost:8000|$RAILWAY_URL|g" "$FRONTEND_SERVICE"  sed -i '' "s|http://localhost:8000|$RAILWAY_URL|g" "$FRONTEND_SERVICE"
+
+  echo -e "${GREEN}✓ Frontend API endpoint updated${NC}"  echo -e "${GREEN}✓ Frontend API endpoint updated${NC}"
+
+elseelse
+
+  echo -e "${RED}⚠️  Could not find handover.service.ts${NC}"  echo -e "${RED}⚠️  Could not find handover.service.ts${NC}"
+
+fifi
+
+echo ""echo ""
+
+
+
+# Step 3: Build frontend for production# Step 3: Build frontend for production
+
+echo -e "${BLUE}Step 3: Building frontend for production...${NC}"echo -e "${BLUE}Step 3: Building frontend for production...${NC}"
+
+
+
+cd frontendcd frontend
+
+
+
+npm installnpm install
+
+ng build --configuration production --base-href "/shift-handover-intelligence/"ng build --configuration production --base-href "/shift-handover-intelligence/"
+
+
+
+echo -e "${GREEN}✓ Frontend built successfully${NC}"echo -e "${GREEN}✓ Frontend built successfully${NC}"
+
+echo ""echo ""
+
+
+
+# Step 4: Deploy to GitHub Pages# Step 4: Deploy to GitHub Pages
+
+echo -e "${BLUE}Step 4: Deploying frontend to GitHub Pages...${NC}"echo -e "${BLUE}Step 4: Deploying frontend to GitHub Pages...${NC}"
+
+
+
+npx angular-cli-ghpages --dir=dist/shift-handover-intelligence --repo=https://github.com/ShrinikaTelu/shift-handover-intelligence.gitnpx angular-cli-ghpages --dir=dist/shift-handover-intelligence --repo=https://github.com/ShrinikaTelu/shift-handover-intelligence.git
+
+
+
+echo -e "${GREEN}✓ Deployed to GitHub Pages!${NC}"echo -e "${GREEN}✓ Deployed to GitHub Pages!${NC}"
+
+echo ""echo ""
+
+
+
+# Step 5: Display results# Step 5: Display results
+
+echo -e "${BLUE}================================${NC}"echo -e "${BLUE}================================${NC}"
+
+echo -e "${BLUE}=== Deployment Complete ===${NC}"echo -e "${BLUE}=== Deployment Complete ===${NC}"
+
+echo -e "${BLUE}================================${NC}"echo -e "${BLUE}================================${NC}"
+
+echo ""echo ""
+
+echo -e "${GREEN}✓ Frontend (GitHub Pages):${NC}"echo -e "${GREEN}✓ Frontend (GitHub Pages):${NC}"
+
+echo -e "   https://ShrinikaTelu.github.io/shift-handover-intelligence/"echo -e "   https://ShrinikaTelu.github.io/shift-handover-intelligence/"
+
+echo ""echo ""
+
+echo -e "${GREEN}✓ Backend API (Railway):${NC}"echo -e "${GREEN}✓ Backend API (Railway):${NC}"
+
+echo -e "   $RAILWAY_URL"echo -e "   $RAILWAY_URL"
+
+echo ""echo ""
+
+echo -e "${YELLOW}Next steps:${NC}"echo -e "${YELLOW}Next steps:${NC}"
+
+echo "1. Verify frontend deployment: https://ShrinikaTelu.github.io/shift-handover-intelligence/"echo "1. Verify frontend deployment: https://ShrinikaTelu.github.io/shift-handover-intelligence/"
+
+echo "2. Verify backend is running on Railway"echo "2. Verify backend is running on Railway"
+
+echo "3. Test API endpoints at: $RAILWAY_URL/docs"echo "3. Test API endpoints at: $RAILWAY_URL/docs"
+
+echo ""echo ""
+
                 echo ""
                 echo "✅ Both servers running!"
                 echo "Frontend: http://localhost:4200"
