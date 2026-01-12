@@ -15,7 +15,7 @@ import { HandoverRequest, HandoverResponse } from './models/handover.model';
 export class AppComponent {
     @ViewChild(HandoverFormComponent) formComponent?: HandoverFormComponent;
 
-    title = 'Shift Handover Intelligence';
+    title = 'Smart Handover';
     result: HandoverResponse | null = null;
     error: string | null = null;
 
