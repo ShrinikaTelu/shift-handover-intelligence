@@ -747,6 +747,16 @@ input[type='file'] {
     }
 }
 
+/* Microphone SVG Icon Styling */
+.microphone-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    stroke: currentColor;
+}
+
 .voice-label {
     font-weight: 600;
     white-space: nowrap;
