@@ -85,7 +85,7 @@ echo ""
 # Step 4: Deploy to GitHub Pages
 echo -e "${BLUE}Step 4: Deploying to GitHub Pages...${NC}"
 npx angular-cli-ghpages \
-  --dir=dist/frontend \
+  --dir=dist/frontend/browser \
   --repo=https://github.com/$REPO_OWNER/$REPO_NAME.git \
   --no-silent
 
