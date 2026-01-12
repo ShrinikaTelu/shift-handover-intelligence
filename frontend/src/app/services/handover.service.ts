@@ -3,12 +3,14 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HandoverRequest, HandoverResponse } from '../models/handover.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
     providedIn: 'root',
 })
 export class HandoverService {
-    private readonly API_URL = 'http://localhost:8000/api';
+    private readonly API_URL = environment.apiUrl;
+    private readonly HEALTH_URL = environment.healthUrl;
 
     constructor(private http: HttpClient) {}
 
@@ -45,7 +47,7 @@ export class HandoverService {
 
     checkHealth(): Observable<any> {
         return this.http
-            .get('http://localhost:8000/health')
+            .get(this.HEALTH_URL)
             .pipe(catchError(this.handleError));
     }
 
