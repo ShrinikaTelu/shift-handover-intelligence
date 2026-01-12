@@ -1,0 +1,42 @@
+# Railway Deployment Instructions
+
+⚠️ **IMPORTANT**: This is a monorepo with TWO separate services (frontend and backend).
+
+## How to Deploy on Railway
+
+### For Backend Service:
+
+1. In Railway dashboard, create a new service
+2. Connect your GitHub repository: `shift-handover-intelligence`
+3. In the service settings:
+   - **Dockerfile**: `Dockerfile.backend`
+   - **Build context**: `.` (root directory)
+   - **Port**: `8000`
+
+4. Add environment variables:
+   ```
+   GEMINI_API_KEY=your_api_key
+   DATABASE_URL=sqlite+aiosqlite:///./handover.db
+   ALLOWED_ORIGINS=*
+   DEBUG=false
+   ```
+
+### For Frontend Service:
+
+1. Create another service in the same project
+2. Connect your GitHub repository: `shift-handover-intelligence`
+3. In the service settings:
+   - **Dockerfile**: `Dockerfile.frontend`
+   - **Build context**: `.` (root directory)
+   - **Port**: `80`
+
+4. No additional environment variables needed
+
+### How Railway Will Build Each Service:
+
+- **Backend**: Uses `Dockerfile.backend` which runs from root and copies `backend/` folder
+- **Frontend**: Uses `Dockerfile.frontend` which runs from root and copies `frontend/` folder
+
+Both Dockerfiles are configured to work with build context from the root directory.
+
+That's it! Railway will automatically deploy both services.
