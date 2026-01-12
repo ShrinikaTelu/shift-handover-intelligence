@@ -1,5 +1,0 @@
-deploy:
-  dockerfile: Dockerfile
-  context: ..
-  args:
-    - BUILDKIT_INLINE_CACHE=1
