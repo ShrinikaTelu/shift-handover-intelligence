@@ -2,8 +2,6 @@
 
 AI-powered shift handover report generation system using Google Gemini AI. Transform unstructured shift notes, alarms, and trends into professional, structured handover documents.
 
-![Shift Handover Intelligence](frontend/src/assets/background.png)
-
 ## 🌐 Live Demo
 
 - **Frontend**: [https://shrinikatelu.github.io/shift-handover-intelligence/](https://shrinikatelu.github.io/shift-handover-intelligence/)
