@@ -1,16 +1,3 @@
-#!/bin/bash#!/bin/bash
-
-# Shift Handover Intelligence - Full Stack Deployment Script# Shift Handover Intelligence - Full Stack Deployment Script
-
-
-
-set -eset -e
-
-
-
-# Colors for output# Colors for output
-
-GREEN='\033[0;32m'GREEN='\033[0;32m'
 #!/bin/bash
 
 set -e
@@ -121,11 +108,3 @@ echo -e "${YELLOW}Next steps:${NC}"
 echo "1. Verify frontend: https://$REPO_OWNER.github.io/$REPO_NAME/"
 echo "2. Verify backend: $RAILWAY_URL/docs"
 echo "3. If CORS issues, ensure backend allows https://$REPO_OWNER.github.io"
-echo ""
-                ;;
-        esac
-    done
-}
-
-# Run main script
-main
