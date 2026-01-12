@@ -12,7 +12,6 @@ import os
 from schemas import HandoverRequest, HandoverResponse, ErrorResponse, HandoverStructured
 from gemini_client import GeminiClient
 from database import init_db, get_session, save_handover_session
-from pdf_generator import generate_pdf_from_structured_data
 
 # Configure logging
 logging.basicConfig(
