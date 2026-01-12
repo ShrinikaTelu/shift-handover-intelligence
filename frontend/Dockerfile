@@ -15,11 +15,20 @@ COPY frontend/ .
 # Build for production
 RUN npm run build -- --configuration=production
 
+# List the build output to verify
+RUN ls -la dist/
+
 # Production stage
 FROM nginx:alpine
 
+# Remove default nginx files
+RUN rm -rf /usr/share/nginx/html/*
+
 # Copy built application from build stage
 COPY --from=build /app/dist/frontend /usr/share/nginx/html
+
+# Verify files were copied
+RUN ls -la /usr/share/nginx/html/
 
 # Copy nginx config
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
