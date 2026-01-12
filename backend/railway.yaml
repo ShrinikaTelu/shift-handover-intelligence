@@ -1,5 +1,5 @@
 deploy:
-  dockerfile: Dockerfile.backend
-  context: .
+  dockerfile: Dockerfile
+  context: ..
   args:
     - BUILDKIT_INLINE_CACHE=1

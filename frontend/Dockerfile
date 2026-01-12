@@ -3,20 +3,17 @@ FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Copy package files
-COPY frontend/package*.json ./
+# Copy entire project to build context
+COPY . .
 
-# Install dependencies
-RUN npm ci
-
-# Copy source code
-COPY frontend/ .
+# Install dependencies from frontend package
+RUN cd frontend && npm ci
 
 # Build for production
-RUN npm run build -- --configuration=production
+RUN cd frontend && npm run build -- --configuration=production
 
 # List the build output to verify
-RUN ls -la dist/
+RUN ls -la frontend/dist/
 
 # Production stage
 FROM nginx:alpine
@@ -25,7 +22,7 @@ FROM nginx:alpine
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy built application from build stage
-COPY --from=build /app/dist/frontend /usr/share/nginx/html
+COPY --from=build /app/frontend/dist/frontend /usr/share/nginx/html
 
 # Verify files were copied
 RUN ls -la /usr/share/nginx/html/
