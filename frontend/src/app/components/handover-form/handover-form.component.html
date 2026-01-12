@@ -210,6 +210,9 @@ Example:
                             <span class="upload-text">Upload JSON</span>
                         </label>
                     </div>
+                    <div *ngIf="alarmsFileName" class="file-uploaded-confirmation">
+                        ✅ Uploaded: {{ alarmsFileName }}
+                    </div>
                 </div>
 
                 <!-- Trends CSV Upload -->
@@ -231,6 +234,9 @@ Example:
                             <span class="upload-icon">📊</span>
                             <span class="upload-text">Upload CSV</span>
                         </label>
+                    </div>
+                    <div *ngIf="trendsFileName" class="file-uploaded-confirmation">
+                        ✅ Uploaded: {{ trendsFileName }}
                     </div>
                 </div>
             </div>

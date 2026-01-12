@@ -19,6 +19,10 @@ export class HandoverFormComponent {
     alarmsFile: File | null = null;
     trendsFile: File | null = null;
     isLoading: boolean = false;
+    
+    // File upload feedback
+    alarmsFileName: string = '';
+    trendsFileName: string = '';
 
     // Voice recording properties
     isRecording: boolean = false;
@@ -53,6 +57,8 @@ export class HandoverFormComponent {
         const input = event.target as HTMLInputElement;
         if (input.files && input.files.length > 0) {
             this.alarmsFile = input.files[0];
+            this.alarmsFileName = this.alarmsFile.name;
+            console.log('Alarms file selected:', this.alarmsFileName);
         }
     }
 
@@ -60,6 +66,8 @@ export class HandoverFormComponent {
         const input = event.target as HTMLInputElement;
         if (input.files && input.files.length > 0) {
             this.trendsFile = input.files[0];
+            this.trendsFileName = this.trendsFile.name;
+            console.log('Trends file selected:', this.trendsFileName);
         }
     }
 
