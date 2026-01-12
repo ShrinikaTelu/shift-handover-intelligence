@@ -40,18 +40,28 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration (configurable via ALLOWED_ORIGINS)
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
-if allowed_origins_env.strip() == "*":
-    allowed_origins = ["*"]
-else:
-    allowed_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
+# CORS configuration - allow GitHub Pages and local development
+allowed_origins = [
+    "https://shrinikatelu.github.io",
+    "http://localhost:4200",
+    "http://localhost:8000",
+    "http://127.0.0.1:4200",
+    "http://127.0.0.1:8000",
+]
+
+# Add any additional origins from environment variable
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+if allowed_origins_env.strip():
+    for origin in allowed_origins_env.split(","):
+        origin = origin.strip()
+        if origin and origin not in allowed_origins:
+            allowed_origins.append(origin)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
