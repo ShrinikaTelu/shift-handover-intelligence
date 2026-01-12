@@ -7,15 +7,12 @@ using ReportLab (lighter weight than WeasyPrint)
 from io import BytesIO
 from datetime import datetime
 from typing import Dict, Any
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.lib.colors import HexColor, grey, black, white
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, PageTemplate, Frame, KeepTogether
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-import json
+from reportlab.lib.colors import HexColor, grey
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 import re
 
 
@@ -117,15 +114,6 @@ def parse_markdown_to_story(markdown_text: str) -> list:
         spaceAfter=8,
         alignment=TA_JUSTIFY,
         leading=14
-    )
-    
-    bold_style = ParagraphStyle(
-        'Bold',
-        parent=styles['Normal'],
-        fontSize=11,
-        textColor=HexColor('#1a1a1a'),
-        spaceAfter=6,
-        fontName='Helvetica-Bold'
     )
     
     code_style = ParagraphStyle(
