@@ -1,8 +1,7 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build` replaces `environment.ts` with `environment.prod.ts`.
-
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8000/api',
-  healthUrl: 'http://localhost:8000/health'
+	production: true,
+	// Default local values; deploy.sh will overwrite this file for production
+	apiUrl: 'http://localhost:8000/api',
+	healthUrl: 'http://localhost:8000/health'
 };
+
