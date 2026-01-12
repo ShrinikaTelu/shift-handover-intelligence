@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HandoverRequest } from '../../models/handover.model';
@@ -12,7 +12,6 @@ import { HandoverRequest } from '../../models/handover.model';
 })
 export class HandoverFormComponent {
     @Output() generateHandover = new EventEmitter<HandoverRequest>();
-    @ViewChild('recordingStatus') recordingStatusRef!: ElementRef;
 
     constructor(private cdr: ChangeDetectorRef) {}
 
