@@ -1,7 +1,0 @@
-[services.backend]
-dockerfile = "Dockerfile.backend"
-context = "."
-
-[services.frontend]
-dockerfile = "Dockerfile.frontend"
-context = "."
