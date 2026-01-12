@@ -18,18 +18,11 @@ RUN npm run build -- --configuration=production
 # Production stage
 FROM nginx:alpine
 
-# Copy custom nginx config template
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf.template
-
 # Copy built application from build stage
 COPY --from=build /app/dist/frontend /usr/share/nginx/html
 
-# Create startup script
-RUN echo '#!/bin/sh\n\
-PORT=${PORT:-80}\n\
-sed "s/\${PORT}/$PORT/g" /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf\n\
-nginx -g "daemon off;"\n\
-' > /start.sh && chmod +x /start.sh
+# Copy nginx config
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port
 EXPOSE 80
@@ -38,5 +31,5 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
-# Start nginx with PORT substitution
-CMD ["/start.sh"]
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
