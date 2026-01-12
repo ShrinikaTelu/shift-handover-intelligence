@@ -60,18 +60,6 @@ class HandoverResponse(BaseModel):
     sessionId: Optional[str] = None
 
 
-class HandoverSession(BaseModel):
-    """Database model for storing handover sessions"""
-    id: Optional[int] = None
-    session_id: str
-    shift_notes: str
-    alarms_json: Optional[str] = None
-    trends_csv: Optional[str] = None
-    markdown_output: str
-    json_output: str
-    created_at: Optional[str] = None
-
-
 class ErrorResponse(BaseModel):
     """Standard error response"""
     error: str
