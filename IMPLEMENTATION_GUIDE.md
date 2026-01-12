@@ -8,6 +8,20 @@
 4. [Features Explained](#4-features-explained)
 5. [Technology Stack](#5-technology-stack)
 6. [Implementation Details](#6-implementation-details)
+   - [6.1 Backend Implementation](#61-backend-implementation)
+   - [6.2 Frontend Implementation](#62-frontend-implementation)
+   - [6.3 Google Gemini AI Integration](#63-google-gemini-ai-integration---complete-guide)
+     - [6.3.1 Overview](#631-overview-of-gemini-ai-in-this-project)
+     - [6.3.2 Obtaining API Key](#632-obtaining-a-gemini-api-key)
+     - [6.3.3 API Key Configuration](#633-api-key-configuration)
+     - [6.3.4 Code Implementation](#634-code-implementation-deep-dive)
+     - [6.3.5 Making API Calls](#635-making-api-calls)
+     - [6.3.6 System Prompt Engineering](#636-system-prompt-engineering)
+     - [6.3.7 Error Handling](#637-error-handling--resilience)
+     - [6.3.8 API Usage & Rate Limits](#638-api-usage--rate-limits)
+     - [6.3.9 Testing Integration](#639-testing-the-gemini-integration)
+     - [6.3.10 Security Considerations](#6310-security-considerations)
+     - [6.3.11 Troubleshooting](#6311-troubleshooting-gemini-api-issues)
 7. [API Documentation](#7-api-documentation)
 8. [Testing Guide](#8-testing-guide)
 9. [Deployment Guide](#9-deployment-guide)
@@ -370,6 +384,411 @@ export const environment = {
     apiUrl: 'https://shift-handover-intelligence-production.up.railway.app/api',
     healthUrl: 'https://shift-handover-intelligence-production.up.railway.app/health'
 };
+```
+
+### 6.3 Google Gemini AI Integration - Complete Guide
+
+This section provides a comprehensive explanation of how the Google Gemini 3 API is integrated into the Shift Handover Intelligence application, including API key management, authentication, usage patterns, and best practices.
+
+#### 6.3.1 Overview of Gemini AI in This Project
+
+The application uses **Google Gemini 3 Flash Preview** (`gemini-3-flash-preview`) model for:
+- Natural language understanding of unstructured shift notes
+- Intelligent categorization of events (safety, equipment, process)
+- Generation of structured JSON output
+- Creation of human-readable markdown reports
+- Context-aware analysis combining notes, alarms, and trends
+
+#### 6.3.2 Obtaining a Gemini API Key
+
+**Step 1: Access Google AI Studio**
+1. Navigate to [Google AI Studio](https://aistudio.google.com/)
+2. Sign in with your Google account
+3. Accept the Terms of Service if prompted
+
+**Step 2: Generate API Key**
+1. Click on **"Get API Key"** in the left sidebar
+2. Click **"Create API Key"**
+3. Choose an existing Google Cloud project or create a new one
+4. Copy the generated API key (it will look like: `AIzaSy...`)
+
+**Step 3: API Key Security Best Practices**
+```
+✅ DO:
+- Store API key in environment variables
+- Use .env files for local development
+- Set API key in Railway dashboard for production
+- Add .env to .gitignore
+
+❌ DON'T:
+- Hardcode API key in source code
+- Commit API key to version control
+- Share API key publicly
+- Use same key for development and production
+```
+
+#### 6.3.3 API Key Configuration
+
+**Local Development Setup:**
+
+1. Create `.env` file in project root:
+```bash
+# .env (never commit this file!)
+GEMINI_API_KEY=AIzaSy_your_actual_api_key_here
+```
+
+2. Add to `.gitignore`:
+```
+# Environment files
+.env
+.env.local
+.env.production
+```
+
+**Production Setup (Railway):**
+
+1. Go to Railway Dashboard → Your Project → Variables
+2. Add new variable:
+   - **Key**: `GEMINI_API_KEY`
+   - **Value**: Your actual API key
+3. Railway automatically injects this into the container environment
+
+#### 6.3.4 Code Implementation Deep Dive
+
+**File: `backend/gemini_client.py`**
+
+```python
+from google import genai
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env from project root (handles relative paths correctly)
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
+class GeminiClient:
+    """Client for interacting with Google Gemini API"""
+
+    def __init__(self):
+        """Initialize Gemini client with API key from environment"""
+        
+        # Step 1: Retrieve API key from environment
+        api_key = os.getenv('GEMINI_API_KEY')
+        
+        # Step 2: Validate API key exists
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY environment variable not set")
+        
+        # Step 3: Set Google API key (required by google-genai library)
+        os.environ['GOOGLE_API_KEY'] = api_key
+        
+        # Step 4: Initialize the Gemini client
+        self.client = genai.Client(api_key=api_key)
+        
+        # Step 5: Configure model version
+        self.model_name = 'gemini-3-flash-preview'
+```
+
+**Key Implementation Details:**
+
+| Component | Purpose |
+|-----------|---------|
+| `load_dotenv()` | Loads environment variables from .env file |
+| `os.getenv('GEMINI_API_KEY')` | Retrieves API key from environment |
+| `genai.Client(api_key=...)` | Creates authenticated Gemini client |
+| `os.environ['GOOGLE_API_KEY']` | Sets key for google-genai library internals |
+
+#### 6.3.5 Making API Calls
+
+**The Request Flow:**
+
+```
+User Input → FastAPI Endpoint → GeminiClient → Gemini API → Response Parsing
+     │              │                │              │              │
+     │              │                │              │              │
+Shift Notes    Validates      Builds Prompt    AI Processing   Extract JSON
+Alarms JSON    Request        Sends to API     Generates       & Markdown
+Trends CSV                                     Response
+```
+
+**API Call Implementation:**
+
+```python
+def generate_handover(self, shift_notes, alarms_json=None, trends_csv=None):
+    """
+    Generate handover summary using Gemini API
+    
+    Args:
+        shift_notes: Raw text from operator
+        alarms_json: Optional alarm data as dict
+        trends_csv: Optional trend data as CSV string
+    
+    Returns:
+        Tuple[str, Dict]: (markdown_report, structured_json)
+    """
+    
+    # Build comprehensive prompt with all context
+    prompt = self._build_prompt(shift_notes, alarms_json, trends_csv)
+    
+    # Make API call to Gemini
+    response = self.client.models.generate_content(
+        model=self.model_name,      # 'gemini-3-flash-preview'
+        contents=prompt              # Combined prompt with all data
+    )
+    
+    # Extract text response
+    response_text = response.text
+    
+    # Parse JSON from response
+    json_data = extract_json_from_text(response_text)
+    
+    # Generate or extract markdown
+    markdown = self._extract_or_generate_markdown(response_text, json_data)
+    
+    return markdown, json_data
+```
+
+#### 6.3.6 System Prompt Engineering
+
+The quality of AI output depends heavily on the system prompt. Here's the complete prompt used:
+
+```python
+SYSTEM_PROMPT = """You are an industrial operations assistant specialized 
+in AVEVA systems and manufacturing operations.
+
+Your task is to convert shift handover notes, alarm data, and trend data 
+into a structured, actionable handover summary.
+
+CRITICAL REQUIREMENTS:
+1. **Separate Facts from Hypotheses**: Clearly distinguish between 
+   observed facts and inferred hypotheses.
+2. **Provide Confidence**: For any hypothesis or inference, provide 
+   a confidence percentage (0-100%).
+3. **Be Specific and Operational**: Use precise industrial terminology. 
+   Reference specific equipment, tags, or alarm IDs when available.
+4. **Ask Clarifying Questions**: If critical information is missing, 
+   ask up to 3 specific questions.
+5. **Output Format**: Return BOTH:
+   - A valid JSON object matching the exact schema below
+   - A markdown-formatted report
+
+JSON SCHEMA (STRICT):
+{
+  "shiftSummary": ["fact 1", "fact 2", ...],
+  "criticalAlarms": [{"alarm": "...", "meaning": "..."}],
+  "openIssues": [{"issue": "...", "priority": "High|Med|Low", "confidence": 75}],
+  "recommendedActions": ["action 1", "action 2", ...],
+  "questions": ["question 1", "question 2", ...]
+}
+
+PRIORITY LEVELS:
+- High: Immediate action required, safety/production impact
+- Med: Should be addressed within 24 hours
+- Low: Monitor or address when convenient
+"""
+```
+
+**Why This Prompt Works:**
+
+| Technique | Purpose |
+|-----------|---------|
+| Role Definition | "industrial operations assistant" sets context |
+| Clear Requirements | Numbered list prevents ambiguity |
+| Strict Schema | JSON schema ensures parseable output |
+| Priority Guidelines | Standardizes categorization |
+| Dual Output | Both human and machine-readable formats |
+
+#### 6.3.7 Error Handling & Resilience
+
+**Robust Error Handling:**
+
+```python
+def generate_handover(self, shift_notes, alarms_json=None, trends_csv=None):
+    try:
+        # Normal API call
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=prompt
+        )
+        # ... process response
+        
+    except Exception as e:
+        # Log error for debugging
+        logger.error(f"Gemini API error: {e}", exc_info=True)
+        
+        # Return graceful fallback response
+        fallback_json = {
+            'shiftSummary': [f"Error: {str(e)}", "Review notes manually"],
+            'criticalAlarms': [],
+            'openIssues': [{
+                "issue": "Gemini API Error",
+                "priority": "High",
+                "confidence": 100
+            }],
+            'recommendedActions': ["Check API key", "Retry request"],
+            'questions': []
+        }
+        
+        return create_markdown_from_structured(fallback_json), fallback_json
+```
+
+**JSON Self-Repair Feature:**
+
+When Gemini returns malformed JSON, the client attempts self-repair:
+
+```python
+def _repair_json_with_gemini(self, invalid_response):
+    """Use Gemini to repair its own malformed JSON output"""
+    
+    repair_prompt = f"""The following response contains malformed JSON:
+
+{invalid_response}
+
+Please extract and return ONLY a valid JSON object.
+Return ONLY the JSON, nothing else."""
+
+    response = self.client.models.generate_content(
+        model=self.model_name,
+        contents=repair_prompt
+    )
+    
+    return extract_json_from_text(response.text)
+```
+
+#### 6.3.8 API Usage & Rate Limits
+
+**Gemini API Pricing (as of 2026):**
+
+| Model | Input | Output | RPM Limit |
+|-------|-------|--------|-----------|
+| gemini-3-flash-preview | $0.075/1M tokens | $0.30/1M tokens | 60 |
+| gemini-3-pro | $1.25/1M tokens | $5.00/1M tokens | 60 |
+
+**Token Estimation:**
+- Average shift notes: ~500 tokens
+- Average alarm JSON: ~200 tokens
+- Average trends CSV: ~300 tokens
+- Average response: ~1,500 tokens
+- **Cost per handover**: ~$0.0005 (less than 1 cent)
+
+**Rate Limiting Considerations:**
+
+```python
+# For high-volume deployments, add rate limiting:
+import time
+from functools import wraps
+
+def rate_limit(max_per_minute=50):
+    """Decorator to rate limit API calls"""
+    min_interval = 60.0 / max_per_minute
+    last_called = [0.0]
+    
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            elapsed = time.time() - last_called[0]
+            if elapsed < min_interval:
+                time.sleep(min_interval - elapsed)
+            last_called[0] = time.time()
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+```
+
+#### 6.3.9 Testing the Gemini Integration
+
+**Manual Testing:**
+
+```bash
+# 1. Set environment variable
+export GEMINI_API_KEY="your_api_key"
+
+# 2. Start backend
+cd backend
+python -m uvicorn main:app --reload
+
+# 3. Test with curl
+curl -X POST http://localhost:8000/api/handover/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "shift_notes": "Started batch 2024-001 at 0600. Reactor temp hit 85C.",
+    "alarms_json": [{"time": "07:30", "tag": "TI-101", "desc": "High temp"}],
+    "trends_csv": "time,tag,value\n06:00,TI-101,75\n07:00,TI-101,85"
+  }'
+```
+
+**Unit Testing:**
+
+```python
+# tests/test_gemini_client.py
+import pytest
+from unittest.mock import Mock, patch
+
+def test_gemini_client_initialization():
+    """Test client initializes with valid API key"""
+    with patch.dict('os.environ', {'GEMINI_API_KEY': 'test_key'}):
+        client = GeminiClient()
+        assert client.model_name == 'gemini-3-flash-preview'
+
+def test_gemini_client_missing_key():
+    """Test client raises error without API key"""
+    with patch.dict('os.environ', {}, clear=True):
+        with pytest.raises(ValueError) as exc_info:
+            GeminiClient()
+        assert "GEMINI_API_KEY" in str(exc_info.value)
+```
+
+#### 6.3.10 Security Considerations
+
+**API Key Protection Checklist:**
+
+- [x] API key stored in environment variables only
+- [x] `.env` file added to `.gitignore`
+- [x] Production key set in Railway dashboard (not in code)
+- [x] Different keys for development vs production (recommended)
+- [x] API key validated on startup (fails fast if missing)
+
+**Environment Variable Loading Order:**
+
+```
+1. Railway Dashboard (production) → Injected at container start
+2. .env file (local development) → Loaded by python-dotenv
+3. System environment → Fallback
+```
+
+**Verifying API Key is Set:**
+
+```python
+# In main.py startup
+@app.on_event("startup")
+async def verify_gemini_key():
+    if not os.getenv("GEMINI_API_KEY"):
+        logger.error("GEMINI_API_KEY not set - AI features will fail!")
+    else:
+        logger.info("Gemini API key configured successfully")
+```
+
+#### 6.3.11 Troubleshooting Gemini API Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| `ValueError: GEMINI_API_KEY not set` | Missing API key | Add key to `.env` or Railway variables |
+| `401 Unauthorized` | Invalid API key | Regenerate key in Google AI Studio |
+| `429 Too Many Requests` | Rate limit exceeded | Implement rate limiting, upgrade plan |
+| `500 Internal Server Error` | Gemini service issue | Retry with exponential backoff |
+| Malformed JSON response | Prompt issue | Check prompt, use JSON repair feature |
+
+**Debug Logging:**
+
+```python
+# Enable detailed logging
+import logging
+logging.getLogger('google.genai').setLevel(logging.DEBUG)
+
+# In gemini_client.py
+logger.debug(f"Prompt length: {len(prompt)} chars")
+logger.debug(f"Response length: {len(response.text)} chars")
 ```
 
 ---
