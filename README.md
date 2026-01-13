@@ -1,6 +1,6 @@
 # 🔄 Shift Handover Intelligence
 
-AI-powered shift handover report generation system using Google Gemini AI. Transform unstructured shift notes, alarms, and trends into professional, structured handover documents.
+AI-powered shift handover report generation system using Google Gemini 3. Transform unstructured shift notes, alarms, and trends into professional, structured handover documents with **hands-free voice input**.
 
 ## 🌐 Live Demo
 
@@ -10,7 +10,8 @@ AI-powered shift handover report generation system using Google Gemini AI. Trans
 
 ## ✨ Features
 
-- 🤖 **AI-Powered Analysis**: Uses Google Gemini AI to intelligently parse and structure shift notes
+- 🎤 **Voice-to-Text Input**: Hands-free note capture with real-time speech recognition - speak naturally and watch your words appear instantly
+- 🤖 **AI-Powered Analysis**: Uses Google Gemini 3 to intelligently parse and structure shift notes
 - 📝 **Multiple Input Formats**: Accepts plain text notes, JSON alarms, and CSV trend data
 - 📄 **PDF Generation**: Download professional PDF reports of handover summaries
 - 🎨 **Modern UI**: Clean, responsive Angular frontend with industrial-themed design
@@ -25,7 +26,8 @@ AI-powered shift handover report generation system using Google Gemini AI. Trans
 │                    GitHub Pages Deployment                       │
 │                                                                  │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │ Handover Form│  │ Result View  │  │ PDF Download         │  │
+│  │ 🎤 Voice     │  │ Handover Form│  │ Result View          │  │
+│  │ Input (STT)  │  │ + File Upload│  │ + PDF Download       │  │
 │  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 └─────────────────────────────┬───────────────────────────────────┘
                               │ HTTPS API Calls
@@ -35,7 +37,7 @@ AI-powered shift handover report generation system using Google Gemini AI. Trans
 │                      Railway Deployment                          │
 │                                                                  │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │ REST API     │  │ Gemini AI    │  │ PDF Generator        │  │
+│  │ REST API     │  │ Gemini 3 AI  │  │ PDF Generator        │  │
 │  │ Endpoints    │  │ Client       │  │ (ReportLab)          │  │
 │  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 │                              │                                   │

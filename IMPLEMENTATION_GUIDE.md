@@ -6,6 +6,12 @@
 2. [Problem Statement](#2-problem-statement)
 3. [Solution Architecture](#3-solution-architecture)
 4. [Features Explained](#4-features-explained)
+   - [4.1 Voice-to-Text Input](#41-voice-to-text-input-hands-free-mode)
+   - [4.2 AI-Powered Text Analysis](#42-ai-powered-text-analysis)
+   - [4.3 Multi-Format Input Support](#43-multi-format-input-support)
+   - [4.4 Structured Output](#44-structured-output)
+   - [4.5 PDF Report Generation](#45-pdf-report-generation)
+   - [4.6 Session Management](#46-session-management)
 5. [Technology Stack](#5-technology-stack)
 6. [Implementation Details](#6-implementation-details)
    - [6.1 Backend Implementation](#61-backend-implementation)
@@ -33,7 +39,13 @@
 
 ## 1. Project Overview
 
-**Shift Handover Intelligence** is an AI-powered application designed to transform unstructured shift notes, alarm data, and trend information into professional, structured handover reports. It leverages Google's Gemini AI to intelligently analyze and organize industrial shift data.
+**Shift Handover Intelligence** is an AI-powered application designed to transform unstructured shift notes, alarm data, and trend information into professional, structured handover reports. It features **hands-free voice-to-text input** for operators who need to capture notes without touching a keyboard, and leverages Google's Gemini 3 AI to intelligently analyze and organize industrial shift data.
+
+### Key Highlights
+- **Voice Input**: Real-time speech recognition for hands-free note capture
+- **AI Analysis**: Google Gemini 3 powered intelligent structuring
+- **Multi-format Support**: Text, JSON alarms, CSV trends
+- **PDF Export**: Professional compliance-ready reports
 
 ### Live URLs
 - **Frontend**: https://shrinikatelu.github.io/shift-handover-intelligence/
@@ -98,11 +110,17 @@ Shift Handover Intelligence uses AI to:
 │                        (Angular 18 Frontend)                         │
 │                                                                      │
 │   ┌────────────────┐   ┌────────────────┐   ┌────────────────────┐  │
-│   │  Shift Notes   │   │  Alarms JSON   │   │   Trends CSV       │  │
-│   │  Text Input    │   │  Input         │   │   Input            │  │
+│   │  🎤 Voice      │   │  Alarms JSON   │   │   Trends CSV       │  │
+│   │  Input (STT)   │   │  Input         │   │   Input            │  │
 │   └───────┬────────┘   └───────┬────────┘   └─────────┬──────────┘  │
 │           │                    │                       │             │
-│           └────────────────────┼───────────────────────┘             │
+│           ▼                    │                       │             │
+│   ┌────────────────┐           │                       │             │
+│   │  Shift Notes   │           │                       │             │
+│   │  Text Area     │◄──────────┼───────────────────────┘             │
+│   └───────┬────────┘           │                                     │
+│           │                    │                                     │
+│           └────────────────────┼─────────────────────────────────    │
 │                                │                                      │
 │                     ┌──────────▼──────────┐                          │
 │                     │   HandoverService   │                          │
@@ -155,20 +173,59 @@ Shift Handover Intelligence uses AI to:
 
 ### Data Flow
 
-1. **User Input**: Operator enters shift notes, optional alarms JSON, optional trends CSV
-2. **API Request**: Frontend sends POST request to `/api/handover/generate`
-3. **AI Processing**: Backend sends data to Gemini AI with structured prompt
-4. **Response Parsing**: AI returns markdown and JSON formatted handover
-5. **Storage**: Handover saved to SQLite with unique session ID
-6. **Display**: Frontend renders structured output with download option
+1. **User Input**: Operator speaks or types shift notes, uploads optional alarms JSON, optional trends CSV
+2. **Voice Processing**: Real-time speech-to-text converts voice to text (if using voice input)
+3. **API Request**: Frontend sends POST request to `/api/handover/generate`
+4. **AI Processing**: Backend sends data to Gemini AI with structured prompt
+5. **Response Parsing**: AI returns markdown and JSON formatted handover
+6. **Storage**: Handover saved to SQLite with unique session ID
+7. **Display**: Frontend renders structured output with download option
 
 ---
 
 ## 4. Features Explained
 
-### 4.1 AI-Powered Text Analysis
+### 4.1 Voice-to-Text Input (Hands-Free Mode)
 
-The core feature uses Google Gemini AI to:
+The standout feature enabling operators to capture shift notes without touching a keyboard - critical for industrial environments where operators may have dirty hands, be wearing gloves, or need to keep eyes on equipment.
+
+**How it works:**
+
+```typescript
+// Uses Web Speech API for real-time transcription
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+this.recognition = new SpeechRecognition();
+this.recognition.continuous = true;      // Keep listening
+this.recognition.interimResults = true;  // Show words as spoken
+this.recognition.language = 'en-US';
+
+this.recognition.onresult = (event) => {
+    // Real-time transcription appended to shift notes
+    this.shiftNotes += transcript;
+};
+```
+
+**Key Capabilities:**
+| Feature | Description |
+|---------|-------------|
+| Real-time Display | Words appear as you speak |
+| Continuous Recording | No time limits - speak as long as needed |
+| Recording Timer | Visual feedback showing recording duration |
+| Playback | Review your recording before confirming |
+| Edit After | Modify transcribed text before submission |
+| Cancel Option | Discard recording and restore original notes |
+
+**User Flow:**
+1. Click microphone button to start recording
+2. Speak naturally - watch words appear in real-time
+3. Click stop when finished
+4. Review playback and transcribed text
+5. Confirm to keep or cancel to discard
+6. Edit if needed, then submit for AI analysis
+
+### 4.2 AI-Powered Text Analysis
+
+The core feature uses Google Gemini 3 AI to:
 - Extract key events from unstructured text
 - Categorize information (safety, equipment, process, quality)
 - Identify pending actions and recommendations
@@ -201,15 +258,15 @@ Generate:
 """
 ```
 
-### 4.2 Multi-Format Input Support
+### 4.3 Multi-Format Input Support
 
 | Input Type | Format | Description |
 |------------|--------|-------------|
-| Shift Notes | Plain Text | Free-form operator notes |
+| Shift Notes | Plain Text or Voice | Free-form operator notes (typed or spoken) |
 | Alarms | JSON Array | `[{"time": "06:00", "tag": "P-101", "description": "High pressure", "priority": "High"}]` |
 | Trends | CSV | `time,tag,value\n06:00,TI-101,85.5\n06:30,TI-101,87.2` |
 
-### 4.3 Structured Output
+### 4.4 Structured Output
 
 The AI generates two outputs:
 1. **Markdown**: Human-readable formatted report
@@ -239,7 +296,7 @@ The AI generates two outputs:
 }
 ```
 
-### 4.4 PDF Report Generation
+### 4.5 PDF Report Generation
 
 Professional PDF reports generated using ReportLab library:
 - Company header and timestamp
@@ -247,7 +304,7 @@ Professional PDF reports generated using ReportLab library:
 - Tables for structured data
 - Download with automatic filename (date-based)
 
-### 4.5 Session Management
+### 4.6 Session Management
 
 - Each handover gets a unique UUID
 - Stored in SQLite database
@@ -1190,7 +1247,20 @@ curl -I -X OPTIONS \
 
 ## 11. Demo Examples
 
-### Example 1: Basic Shift Notes
+### Example 1: Voice Input Demo (Hands-Free Mode)
+
+**Scenario:** Operator in a control room with dirty hands from equipment inspection needs to log shift notes.
+
+**Voice Input Flow:**
+1. Click the microphone button 🎤
+2. Speak: *"Day shift started at 6 AM. Checked all pumps during morning rounds. Pump P-101 had slight vibration, notified maintenance. Reactor temperature stable at 180 degrees. Received raw material delivery at 9:30, three pallets of catalyst. Lunch break at noon. Afternoon was quiet, ran batch 2024-015 with no issues. Handing over to evening shift, all systems normal."*
+3. Watch real-time transcription appear in the text area
+4. Click stop, review playback
+5. Confirm transcription, submit for AI analysis
+
+**Result:** Hands-free note capture without touching keyboard - essential for industrial environments where operators wear gloves or have contaminated hands.
+
+### Example 2: Basic Shift Notes (Text Input)
 
 **Input:**
 ```
@@ -1208,7 +1278,7 @@ Handover to evening shift at 14:00.
 - Safety observation: spill incident with resolution
 - No pending actions
 
-### Example 2: Complex Industrial Scenario
+### Example 3: Complex Industrial Scenario
 
 **Input:**
 ```
@@ -1252,7 +1322,7 @@ For day shift:
 5. **Pending Actions**: 3 items for next shift
 6. **Recommendations**: Prioritized action items
 
-### Example 3: Pharmaceutical Batch Production
+### Example 4: Pharmaceutical Batch Production
 
 **Input:**
 ```
