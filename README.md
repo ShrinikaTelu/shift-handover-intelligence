@@ -3,7 +3,7 @@
 AI-powered shift handover report generation system using Google Gemini 3. Transform unstructured shift notes, alarms, and trends into professional, structured handover documents with **hands-free voice input**.
 
 ## 🌐 Live Demo
-
+- **Vedio**: [https://vimeo.com/1157396522?share=copy&fl=sv&fe=ci)
 - **Frontend**: [https://shrinikatelu.github.io/shift-handover-intelligence/](https://shrinikatelu.github.io/shift-handover-intelligence/)
 - **Backend API**: [https://shift-handover-intelligence-production.up.railway.app/](https://shift-handover-intelligence-production.up.railway.app/)
 - **API Documentation**: [https://shift-handover-intelligence-production.up.railway.app/docs](https://shift-handover-intelligence-production.up.railway.app/docs)
